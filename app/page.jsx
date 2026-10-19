@@ -1,28 +1,26 @@
 import KartuProduk from "@/components/KartuProduk";
+import FilterKatalog from "@/components/FilterKatalog";
 import { createServerClient } from "@/lib/supabase";
 import { toko } from "@/lib/toko";
 
 export const dynamic = "force-dynamic";
 
-export default async function HalamanKatalog() {
-  let daftarProduk = [];
-  let pesanError = null;
+export default async function HalamanKatalog({ searchParams }) {
+  const { q, kategori } = await searchParams;
 
-  try {
-    const supabase = createServerClient();
-    const { data, error } = await supabase
-      .from("produk")
-      .select("*")
-      .order("id", { ascending: true });
+  const supabase = createServerClient();
 
-    if (error) {
-      pesanError = `Gagal mengambil data produk: ${error.message}`;
-    } else {
-      daftarProduk = data || [];
-    }
-  } catch (err) {
-    pesanError = `Terjadi kesalahan saat memuat produk: ${err.message}`;
-  }
+  // Ambil semua kategori untuk dropdown (dari seluruh produk tanpa filter)
+  const { data: semuaProduk } = await supabase.from("produk").select("kategori");
+  const kategoriList = [...new Set((semuaProduk ?? []).map((p) => p.kategori).filter(Boolean))].sort();
+
+  // Query produk dengan filter aktif
+  let query = supabase.from("produk").select("*").order("id", { ascending: true });
+  if (q) query = query.ilike("nama", `%${q}%`);
+  if (kategori) query = query.eq("kategori", kategori);
+
+  const { data, error } = await query;
+  const daftarProduk = data ?? [];
 
   return (
     <>
@@ -39,15 +37,19 @@ export default async function HalamanKatalog() {
           Produk kami
         </h2>
 
-        {pesanError ? (
+        <FilterKatalog kategoriList={kategoriList} />
+
+        {error ? (
           <div
             role="alert"
             className="rounded-xl border border-garis bg-permukaan p-4 text-sm text-bahaya"
           >
-            {pesanError}
+            Gagal mengambil data produk: {error.message}
           </div>
-        ) : daftarProduk.length === 0 ? (
+        ) : daftarProduk.length === 0 && !q && !kategori ? (
           <p className="py-8 text-center text-teks-lembut">Belum ada produk</p>
+        ) : daftarProduk.length === 0 ? (
+          <p className="py-8 text-center text-teks-lembut">Produk tidak ditemukan</p>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
             {daftarProduk.map((produk) => (
