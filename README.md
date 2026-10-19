@@ -1,80 +1,123 @@
-# Katalog UMKM + Order WhatsApp
+# Katalog Produk UMKM
 
-Template workshop vibe coding Creative Hub App Talent (CHAT) 2026. Repo ini berisi tampilan aplikasi katalog UMKM; tugasmu merangkainya menjadi sistem utuh dengan bantuan AI: database, login admin, keamanan, dan pemesanan lewat WhatsApp.
+Aplikasi web katalog produk untuk usaha kecil dan menengah (UMKM). Pengunjung dapat menelusuri produk, melihat detail, memilih jumlah, dan langsung memesan lewat WhatsApp. Pemilik toko mengelola produk melalui dashboard admin yang terproteksi.
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fandixurniawan%2Fkatalog-umkm&project-name=katalog-umkm&repository-name=katalog-umkm)
+## Tech Stack
 
-## Langkah awal
+- **Next.js 16** — App Router, Server Components, Server Actions
+- **Supabase** — PostgreSQL database + Auth (email & password)
+- **Tailwind CSS 4** — styling dengan design token
+- **Vercel** — hosting dan deployment
 
-1. **Salin repo ke akun GitHub-mu.** Klik tombol **Deploy with Vercel** di atas. Vercel akan membuat repo baru di akun GitHub-mu dan langsung men-deploy-nya. Setelah selesai, buka link Vercel-mu: katalog tampil dengan data contoh.
-2. **Buat proyek Supabase.** Masuk ke [supabase.com](https://supabase.com) dengan akun GitHub, lalu buat proyek baru. Simpan password database di tempat aman.
-3. **Siapkan database.** Di Supabase, buka **SQL Editor**, tempel seluruh isi `docs/schema.sql`, lalu klik **Run**. Tabel `produk` beserta data awal akan terbentuk.
-4. **Siapkan akun admin.** Ikuti panduan akun admin yang dibagikan mentor. Setelah itu matikan pendaftaran akun baru di **Authentication > Sign In / Providers**.
-5. **Isi environment variable di Vercel.** Buka proyekmu di Vercel > **Settings > Environment Variables**, lalu isi tiga variabel dari `.env.example`. Nilainya ada di Supabase > **Project Settings > API**. Setelah itu lakukan **Redeploy**.
-6. **Clone repo ke laptop.**
+## Fitur Utama
 
-   ```bash
-   git clone https://github.com/<akunmu>/<nama-repo>.git
-   cd <nama-repo>
-   npm install
-   ```
+### Katalog Publik
+- **US-01** Daftar produk diambil dari Supabase secara server-side, tampil sebagai kartu dengan foto, kategori, nama, dan harga
+- **US-11** Pencarian kata kunci (`.ilike`) dan filter kategori via URL query string, diproses di server
+- **US-02** Halaman detail produk dengan foto, deskripsi, dan harga; menampilkan 404 jika produk tidak ditemukan
+- **US-03** Tombol "Pesan via WhatsApp" dengan pesan otomatis berisi nama dan harga produk
+- **US-12** Pemilih jumlah (quantity) pada halaman detail; jumlah ikut tercantum di pesan WhatsApp
 
-7. **Buat file `.env.local`.** Salin `.env.example` menjadi `.env.local`, lalu isi dengan nilai yang sama seperti di Vercel.
-8. **Jalankan di laptop.**
+### Dashboard Admin
+- **US-04** Login admin dengan Supabase Auth (email & password), diproses via Server Action + cookie (`@supabase/ssr`); tombol Keluar mengakhiri sesi
+- **US-05** Ganti password dengan validasi server (minimal 8 karakter, harus cocok dengan konfirmasi)
+- **US-06** Semua rute `/admin` (kecuali `/admin/login`) diproteksi oleh `proxy.js`; setiap aksi pengubahan data memverifikasi sesi di server
+- **US-07** Daftar produk di halaman admin diambil langsung dari database
+- **US-08** Form tambah produk baru dengan validasi server; data disimpan ke Supabase
+- **US-09** Form ubah produk; data lama terisi otomatis, perubahan disimpan ke Supabase
+- **US-10** Hapus produk dengan dialog konfirmasi; tabel diperbarui otomatis via `revalidatePath`
 
-   ```bash
-   npm run dev
-   ```
+### Fitur Pendukung
+- **US-13** PWA — manifest terkonfigurasi, aplikasi dapat diinstal di perangkat mobile maupun desktop
+- **US-14** Generator deskripsi produk berbasis AI (Gemini API); tombol "Generate dengan AI" di form produk mengisi kolom deskripsi secara otomatis
 
-   Buka `http://localhost:3000`.
+## Instalasi & Konfigurasi
 
-## Alur kerja
-
-Kerjakan satu user story setiap kali, lalu simpan dan kirim perubahan:
+### 1. Kloning repositori
 
 ```bash
-git add .
-git commit -m "US-01: katalog dari database"
-git push
+git clone <url-repositori>
+cd katalog-umkm
 ```
 
-Setiap `git push`, Vercel otomatis men-deploy versi terbaru. Cek hasilnya di link Vercel-mu.
+### 2. Instal dependensi
 
-Urutan yang disarankan: US-01, US-02, US-03, US-04, US-05, US-06, lalu fitur bonus. Daftar lengkap ada di `docs/user-stories.md`.
+```bash
+npm install
+```
 
-## Isi repo
+### 3. Konfigurasi environment variable
 
-| File atau folder | Isi |
-| --- | --- |
-| `AGENTS.md` | Aturan untuk AI agent, dibaca sebelum setiap prompt |
-| `DESIGN.md` | Panduan warna, huruf, dan komponen |
-| `PROMPTS.md` | Jurnal prompt, wajib diisi |
-| `docs/` | Problem statement, PRD, user story, rancangan teknis, skema database, checklist |
-| `lib/toko.js` | Nama toko, nomor WhatsApp, alamat, jam buka |
-| `app/` | Halaman aplikasi |
-| `components/` | Komponen tampilan |
+Salin `.env.example` menjadi `.env.local` lalu isi nilainya:
 
-## Menyesuaikan dengan usahamu
+```bash
+cp .env.example .env.local
+```
 
-- Identitas toko: ubah `lib/toko.js`.
-- Warna: ubah bagian `@theme` di `app/globals.css` (lihat `DESIGN.md`).
-- Produk: ubah langsung di Supabase > **Table Editor > produk**.
+```env
+# Supabase — Project Settings > API
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_PUBLISHABLE_KEY=eyJ...   # anon/public key
+SUPABASE_SECRET_KEY=eyJ...        # service_role key
 
-## Aturan penting
+# AI — https://aistudio.google.com/app/apikey
+AI_API_KEY=
+```
 
-- Jangan menyimpan kunci atau password di kode, dan jangan push file `.env.local`.
-- Jangan memberi awalan `NEXT_PUBLIC_` pada environment variable.
-- Isi `PROMPTS.md` setiap menyelesaikan fitur.
+> Variabel yang sama perlu ditambahkan di Vercel: **Project > Settings > Environment Variables**.
 
-## Sebelum mengumpulkan
+### 4. Siapkan database
 
-1. Jalankan semua poin di `docs/checklist-keamanan.md` dan `docs/checklist-pengujian.md` pada link Vercel.
-2. Lengkapi bagian di bawah ini.
-3. Push perubahan terakhir sebelum batas waktu.
+Jalankan skrip SQL di `docs/schema.sql` melalui Supabase SQL Editor untuk membuat tabel `produk` dan mengaktifkan Row Level Security.
 
-## Tentang aplikasi ini
+### 5. Jalankan server pengembangan
 
-- **Nama usaha:**
-- **Pembuat:**
-- **Link aplikasi:**
-- **Fitur bonus yang dikerjakan:**
+```bash
+npm run dev
+```
+
+Buka [http://localhost:3000](http://localhost:3000).
+
+## Struktur Proyek
+
+```
+app/
+  page.jsx                      # Katalog publik (US-01, US-11)
+  produk/[id]/page.jsx          # Detail produk (US-02, US-03, US-12)
+  admin/
+    login/page.jsx              # Halaman login (US-04)
+    page.jsx                    # Daftar produk admin (US-07)
+    password/page.jsx           # Ganti password (US-05)
+    produk/baru/page.jsx        # Tambah produk (US-08)
+    produk/[id]/ubah/page.jsx   # Ubah produk (US-09)
+    actions.js                  # Semua Server Action admin
+  api/ai-deskripsi/route.js     # Route Handler generate deskripsi AI (US-14)
+  layout.jsx                    # Root layout + metadata PWA
+  manifest.js                   # Web App Manifest (US-13)
+
+components/
+  KartuProduk.jsx               # Kartu produk di katalog
+  TabelProduk.jsx               # Tabel produk di dashboard admin
+  FormProduk.jsx                # Form tambah/ubah produk + tombol AI
+  FilterKatalog.jsx             # Input pencarian & dropdown kategori
+  PemesanProduk.jsx             # Pemilih jumlah + tombol WhatsApp
+  NavAdmin.jsx                  # Navigasi dashboard admin
+  TombolHapus.jsx               # Tombol hapus dengan konfirmasi
+  TombolWhatsApp.jsx            # Tombol pesan WhatsApp
+  Input.jsx / Tombol.jsx        # Komponen UI dasar
+
+lib/
+  supabase/server.js            # Client Supabase dengan service role key
+  supabase/session.js           # Client Supabase berbasis cookie (admin)
+  toko.js                       # Identitas toko (nama, WhatsApp, dll.)
+  format.js                     # Utilitas format Rupiah
+
+proxy.js                        # Middleware proteksi rute /admin (US-06)
+docs/
+  schema.sql                    # Skema database Supabase
+  PRD.md / user-stories.md      # Dokumen produk
+```
+
+## Akun Admin
+
+Akun admin dibuat langsung dari dashboard Supabase Authentication — bukan dari halaman daftar di aplikasi (pendaftaran publik dimatikan). Setelah pertama login, segera ganti password bawaan melalui halaman `/admin/password`.
