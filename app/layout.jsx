@@ -1,17 +1,21 @@
 import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import { toko } from "@/lib/toko";
 
 export const metadata = {
   title: toko.nama,
   description: toko.tagline,
-  themeColor: "#1f6b4f",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
     title: toko.nama,
   },
+};
+
+export const viewport = {
+  themeColor: "#1f6b4f",
 };
 
 export default function RootLayout({ children }) {
@@ -29,6 +33,7 @@ export default function RootLayout({ children }) {
         <Header />
         <main className="mx-auto w-full max-w-5xl flex-1 px-4">{children}</main>
         <Footer />
+        <PWAInstallPrompt />
       </body>
     </html>
   );
