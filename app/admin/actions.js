@@ -91,3 +91,21 @@ export async function tambahProduk(prevState, formData) {
 
   redirect("/admin");
 }
+
+/**
+ * US-10: Hapus produk berdasarkan ID.
+ * Wajib login; setelah berhasil revalidate halaman /admin.
+ */
+export async function hapusProduk(id) {
+  const supabase = await createSessionClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect("/admin/login");
+
+  const { error } = await supabase.from("produk").delete().eq("id", id);
+
+  if (error) return { error: "Gagal menghapus produk. Coba lagi." };
+
+  const { revalidatePath } = await import("next/cache");
+  revalidatePath("/admin");
+}
