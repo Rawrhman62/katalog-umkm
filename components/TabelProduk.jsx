@@ -16,6 +16,13 @@ export default function TabelProduk({ daftarProduk }) {
           </tr>
         </thead>
         <tbody>
+          {daftarProduk.length === 0 && (
+            <tr>
+              <td colSpan={4} className="px-4 py-8 text-center text-teks-lembut">
+                Belum ada produk.
+              </td>
+            </tr>
+          )}
           {daftarProduk.map((produk) => (
             <tr key={produk.id} className="border-t border-garis">
               <td className="px-4 py-3">
