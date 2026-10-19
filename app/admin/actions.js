@@ -109,3 +109,32 @@ export async function hapusProduk(id) {
   const { revalidatePath } = await import("next/cache");
   revalidatePath("/admin");
 }
+
+/**
+ * US-09: Ubah data produk berdasarkan ID.
+ * Wajib login; validasi nama dan harga di server; update tabel produk.
+ */
+export async function ubahProduk(id, prevState, formData) {
+  const supabase = await createSessionClient();
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect("/admin/login");
+
+  const nama = formData.get("nama")?.trim();
+  const harga = Number(formData.get("harga"));
+  const kategori = formData.get("kategori")?.trim() || null;
+  const foto_url = formData.get("foto_url")?.trim() || null;
+  const deskripsi = formData.get("deskripsi")?.trim() || null;
+
+  if (!nama) return { error: "Nama produk tidak boleh kosong." };
+  if (!Number.isFinite(harga) || harga < 0) return { error: "Harga harus berupa angka positif." };
+
+  const { error } = await supabase
+    .from("produk")
+    .update({ nama, harga, kategori, foto_url, deskripsi })
+    .eq("id", id);
+
+  if (error) return { error: "Gagal menyimpan perubahan. Coba lagi." };
+
+  redirect("/admin");
+}
