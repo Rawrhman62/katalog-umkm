@@ -6,6 +6,12 @@ import { toko } from "@/lib/toko";
 export const metadata = {
   title: toko.nama,
   description: toko.tagline,
+  themeColor: "#1f6b4f",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: toko.nama,
+  },
 };
 
 export default function RootLayout({ children }) {
