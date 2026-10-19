@@ -62,3 +62,32 @@ export async function gantiPassword(prevState, formData) {
 
   return { sukses: "Password berhasil diganti." };
 }
+
+/**
+ * US-08: Tambah produk baru.
+ * Wajib login; validasi nama dan harga di server; simpan ke tabel produk.
+ */
+export async function tambahProduk(prevState, formData) {
+  const supabase = await createSessionClient();
+
+  // Verifikasi sesi admin
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  if (authError || !user) redirect("/admin/login");
+
+  const nama = formData.get("nama")?.trim();
+  const harga = Number(formData.get("harga"));
+  const kategori = formData.get("kategori")?.trim() || null;
+  const foto_url = formData.get("foto_url")?.trim() || null;
+  const deskripsi = formData.get("deskripsi")?.trim() || null;
+
+  if (!nama) return { error: "Nama produk tidak boleh kosong." };
+  if (!Number.isFinite(harga) || harga < 0) return { error: "Harga harus berupa angka positif." };
+
+  const { error } = await supabase
+    .from("produk")
+    .insert({ nama, harga, kategori, foto_url, deskripsi });
+
+  if (error) return { error: "Gagal menyimpan produk. Coba lagi." };
+
+  redirect("/admin");
+}
